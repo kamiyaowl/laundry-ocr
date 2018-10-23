@@ -6,6 +6,7 @@
   "author": "K <psoc5lp@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "config": "^2.0.1",
     "node-webcam": "^0.4.5"
   }
 }
