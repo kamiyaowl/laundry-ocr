@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "config": "^2.0.1",
+    "cron": "^1.4.1",
     "node-webcam": "^0.4.5"
   }
 }
