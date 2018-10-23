@@ -1,0 +1,11 @@
+{
+  "name": "timelapse",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/kamiyaowl/timelapse",
+  "author": "K <psoc5lp@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "node-webcam": "^0.4.5"
+  }
+}
