@@ -1,18 +1,35 @@
 const fs = require("fs");
+const path = require("path");
 const config = require("config");
 const { CronJob } = require("cron");
 const NodeWebcam = require("node-webcam");
 const { WebClient } = require("@slack/client");
 
 // 写真撮影して保存する
-const onCapture = async (opts) => {
-    try {
-        const result = await NodeWebcam.capture("capture", opts);
-        return "capture.jpg"; // TODO:もっとやる気が必要
-    } catch (e) {
-        console.error(e);
-        return false;
-    }
+const onCapture = (opts) => {
+    return new Promise((resolve, reject) => {
+        const identify = "capture"
+        const filename = path.resolve(__dirname, `${identify}.jpg`);
+
+        try {
+            if (fs.existsSync(filename)) {
+                fs.unlinkSync(filename);
+                console.log(`remove ${filename}`);
+            }
+            NodeWebcam.capture(identify, opts, (err, result) => {
+                // ファイル存在確認
+                if (!fs.existsSync(filename)) {
+                    reject("capture failure");
+                    return;
+                }
+                console.log(`create ${filename}`);
+                resolve(filename);
+            });
+        } catch (e) {
+            console.error(e);
+            reject(e);
+        }
+    });
 };
 // Webhook先に通知できるように叩く
 const onPost = async (imagepath, slackUrl, urls) => {
