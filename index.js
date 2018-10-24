@@ -77,7 +77,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
 };
 
 // 撮影設定
-const caperaOption = config.cameraOption;
+const cameraOption = config.cameraOption;
 // 定期実行設定
 const cronTime = process.env.CRON_TIME || config.cronTime; // 指定されなかった場合ワンショット実行する
 // Slackでfile.upload APIを使用するための情報。また投稿設定
@@ -91,6 +91,7 @@ const webhookUrls = // スペース区切りでURL複数指定可能
 
 if (cronTime) {
     // 定期実行
+    console.log(`CronJob scheduled! ${cronTime}`);
     new CronJob(cronTime, () => {
         console.log('Job Start')
         Promise.resolve()
@@ -108,7 +109,7 @@ if (cronTime) {
 } else {
     (async () => {
         console.log('Onshot run');
-        const filename = await onCapture(caperaOption);
+        const filename = await onCapture(cameraOption);
         const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls);
         console.log('Done');
     })();
