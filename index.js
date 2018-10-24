@@ -70,7 +70,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
                 channels: slackChannel,
             };
             const result = await request.post({url: url, formData: formData});
-            console.log(`post! urls[${i}/${urls.length}]`);
+            console.log(`post! urls[${i + 1}/${urls.length}]`);
         }
     }
     return true;
@@ -96,7 +96,7 @@ if (cronTime) {
         console.log('Job Start')
         Promise.resolve()
             .then(() => onCapture(cameraOption))
-            .then(filepath => onPost(filepath, slackWebhookUrl, webhookUrls))
+            .then(filename => onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls))
             .then(x => {
                 if (x) {
                     console.log('Job Done')
