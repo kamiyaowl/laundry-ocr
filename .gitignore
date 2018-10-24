@@ -61,5 +61,5 @@ typings/
 .next
 
 # custom
-.jpg
+capture.jpg
 config/default.json

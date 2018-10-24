@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const config = require("config");
+const request = require("request");
 const { CronJob } = require("cron");
 const NodeWebcam = require("node-webcam");
 const { WebClient } = require("@slack/client");
@@ -60,7 +61,17 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
     if (!urls || !urls.length) {
         console.warn('urls are empty');
     } else {
-
+        for(let i = 0 ; i < urls.length ; ++i) {
+            const url = urls[i];
+            const formData = {
+                filename: filename,
+                file: fs.createReadStream(filepath),
+                title: filename,
+                channels: slackChannel,
+            };
+            const result = await request.post({url: url, formData: formData});
+            console.log(`post! urls[${i}/${urls.length}]`);
+        }
     }
     return true;
 };
