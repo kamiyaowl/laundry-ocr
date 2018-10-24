@@ -51,7 +51,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
                 channels: slackChannel,
             });
         if (result.ok) {
-            console.log('slack post');
+            console.log(`slack post! ${result.file.permalink}`);
         } else {
             console.error('slack post error', result.error);
         }
