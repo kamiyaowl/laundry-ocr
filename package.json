@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/kamiyaowl/timelapse",
-  "author": "K <psoc5lp@gmail.com>",
+  "author": "K <kamiyaowl@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@slack/client": "^4.8.0",
     "config": "^2.0.1",
     "cron": "^1.4.1",
     "node-webcam": "^0.4.5"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
