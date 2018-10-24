@@ -9,20 +9,20 @@ const { WebClient } = require("@slack/client");
 const onCapture = (opts) => {
     return new Promise((resolve, reject) => {
         const identify = "capture"
-        const filename = path.resolve(__dirname, `${identify}.jpg`);
+        const filename = `${identify}.jpg`;
+        const filepath = path.resolve(__dirname, filename);
 
         try {
-            if (fs.existsSync(filename)) {
-                fs.unlinkSync(filename);
-                console.log(`remove ${filename}`);
+            if (fs.existsSync(filepath)) {
+                fs.unlinkSync(filepath);
             }
             NodeWebcam.capture(identify, opts, (err, result) => {
                 // ファイル存在確認
-                if (!fs.existsSync(filename)) {
+                if (!fs.existsSync(filepath)) {
                     reject("capture failure");
                     return;
                 }
-                console.log(`create ${filename}`);
+                console.log('captured!')
                 resolve(filename);
             });
         } catch (e) {
@@ -32,16 +32,29 @@ const onCapture = (opts) => {
     });
 };
 // Webhook先に通知できるように叩く
-const onPost = async (imagepath, slackUrl, urls) => {
-    if (!imagepath) {
-        console.error("no imagepath");
+const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
+    if (!filename) {
+        console.warn("no image filename");
         return false;
     }
+    const filepath = path.resolve(__dirname, filename);
     // SlackにPOST
     if (!slackUrl) {
         console.warn('slackUrl is empty');
     } else {
-
+        const web = new WebClient(slackToken);
+        const result =
+            await web.files.upload({
+                filename: filename,
+                file: fs.createReadStream(filepath),
+                title: filename,
+                channels: slackChannel,
+            });
+        if (result.ok) {
+            console.log('slack post');
+        } else {
+            console.error('slack post error', result.error);
+        }
     }
     // Slack以外にPOST
     if (!urls || !urls.length) {
@@ -60,8 +73,6 @@ const cronTime = process.env.CRON_TIME || config.cronTime; // 指定されなか
 const slackWebhookUrl = (process.env.SLACK_WEBHOOK_URL || config.slackWebhookUrl || "https://slack.com/api/files.upload");
 const slackToken = (process.env.SLACK_TOKEN || config.slackToken || "");
 const slackChannel = (process.env.SLACK_CHANNEL || config.slackChannel || "");
-const postTitle = (process.env.POST_TITLE || config.postTitle || "");
-const postComment = (process.env.POST_COMMENT || config.postComment || "");
 // Slack以外にpostする場合
 const webhookUrls = // スペース区切りでURL複数指定可能
     (process.env.WEBHOOK_URLS || config.webhookUrls || "")
@@ -73,7 +84,7 @@ if (cronTime) {
         console.log('Job Start')
         Promise.resolve()
             .then(() => onCapture(cameraOption))
-            .then(filename => onPost(filename, slackWebhookUrl, webhookUrls))
+            .then(filepath => onPost(filepath, slackWebhookUrl, webhookUrls))
             .then(x => {
                 if (x) {
                     console.log('Job Done')
@@ -87,7 +98,7 @@ if (cronTime) {
     (async () => {
         console.log('Onshot run');
         const filename = await onCapture(caperaOption);
-        const result = await onPost(filename, slackWebhookUrl, webhookUrls);
+        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls);
         console.log('Done');
     })();
 }
