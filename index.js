@@ -3,13 +3,14 @@ const path = require("path");
 const config = require("config");
 const request = require("request");
 const { CronJob } = require("cron");
-const { WebClient } = require("@slack/client");
 const NodeWebcam = require("node-webcam");
+const { WebClient } = require("@slack/client");
+const vision = require("@google-cloud/vision");
 
+// Cloud Vision APIが指定されなかったとき
 if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(__dirname, "secret", "credentials.json");
 }
-const vision = require("@google-cloud/vision");
 // 写真撮影して保存する
 const onCapture = (opts) => {
     return new Promise((resolve, reject) => {
@@ -43,13 +44,13 @@ const onAnalyze = async (filename) => {
     }
     const filepath = path.resolve(__dirname, filename);
     const client = new vision.ImageAnnotatorClient();
-    const results = await client.labelDetection(filepath);
+    const results = await client.textDetection(filepath);
     console.log(results);
 
-    return results;
+    return JSON.stringify(results);
 }
 // Webhook先に通知できるように叩く
-const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
+const onPost = async (filename, slackUrl, slackToken, slackChannel, urls, detected) => {
     if (!filename) {
         console.warn("no image filename");
         return false;
@@ -66,6 +67,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
                 file: fs.createReadStream(filepath),
                 title: filename,
                 channels: slackChannel,
+                initial_comment: detected,
             });
         if (result.ok) {
             console.log(`slack post! ${result.file.permalink}`);
@@ -84,6 +86,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
                 file: fs.createReadStream(filepath),
                 title: filename,
                 channels: slackChannel,
+                initial_comment: detected,
             };
             const result = await request.post({url: url, formData: formData});
             console.log(`post! urls[${i + 1}/${urls.length}]`);
@@ -127,7 +130,7 @@ if (cronTime) {
         console.log('Onshot run');
         const filename = await onCapture(cameraOption);
         const detected = await onAnalyze(filename);
-        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls);
+        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls, detected);
         console.log('Done');
     })();
 }
