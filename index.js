@@ -40,7 +40,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
     }
     const filepath = path.resolve(__dirname, filename);
     // SlackにPOST
-    if (!slackUrl) {
+    if (!slackUrl || !slackToken) {
         console.warn('slackUrl is empty');
     } else {
         const web = new WebClient(slackToken);
