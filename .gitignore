@@ -63,3 +63,4 @@ typings/
 # custom
 capture.jpg
 config/default.json
+secret/credentials.json

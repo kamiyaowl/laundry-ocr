@@ -3,9 +3,13 @@ const path = require("path");
 const config = require("config");
 const request = require("request");
 const { CronJob } = require("cron");
-const NodeWebcam = require("node-webcam");
 const { WebClient } = require("@slack/client");
+const NodeWebcam = require("node-webcam");
 
+if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(__dirname, "secret", "credentials.json");
+}
+const vision = require("@google-cloud/vision");
 // 写真撮影して保存する
 const onCapture = (opts) => {
     return new Promise((resolve, reject) => {
@@ -32,6 +36,18 @@ const onCapture = (opts) => {
         }
     });
 };
+const onAnalyze = async (filename) => {
+    if (!filename) {
+        console.warn("no image filename");
+        return false;
+    }
+    const filepath = path.resolve(__dirname, filename);
+    const client = new vision.ImageAnnotatorClient();
+    const results = await client.labelDetection(filepath);
+    console.log(results);
+
+    return results;
+}
 // Webhook先に通知できるように叩く
 const onPost = async (filename, slackUrl, slackToken, slackChannel, urls) => {
     if (!filename) {
@@ -110,6 +126,7 @@ if (cronTime) {
     (async () => {
         console.log('Onshot run');
         const filename = await onCapture(cameraOption);
+        const detected = await onAnalyze(filename);
         const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls);
         console.log('Done');
     })();
