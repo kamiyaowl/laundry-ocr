@@ -1,8 +1,8 @@
 {
-  "name": "timelapse",
+  "name": "Laundry-ocr",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/kamiyaowl/timelapse",
+  "repository": "https://github.com/kamiyaowl/laundry-ocr",
   "author": "K <kamiyaowl@gmail.com>",
   "license": "MIT",
   "dependencies": {
