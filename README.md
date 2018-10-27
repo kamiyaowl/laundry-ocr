@@ -18,7 +18,6 @@ node.jsで作成された定点カメラアプリケーションです。
 |SLACK_WEBHOOK_URL|slackWebhookUrl|slackのPOST先です。正確にはfile upload apiを使うので設定の必要はありません。 | `""`
 |SLACK_TOKEN | slackToken | slackに画像を投稿するために使用するトークンです | -
 |SLACK_CHANNEL | slackChannel | Slackの投稿先チャンネルIDです | -
-|WEBHOOL_URLS| webhookUrls | Slack以外の通知先です。スペース区切りで複数入力できます| `"https ://aaa.... https ://bbb....."`
 
 実行時は以下のいくつかの手法が推奨されます。
 

@@ -6,12 +6,10 @@
   "author": "K <kamiyaowl@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/vision": "^0.22.1",
     "@slack/client": "^4.8.0",
     "config": "^2.0.1",
     "cron": "^1.4.1",
-    "node-webcam": "^0.4.5",
-    "request": "^2.88.0"
+    "node-webcam": "^0.4.5"
   },
   "scripts": {
     "start": "node index.js"

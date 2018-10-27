@@ -1,16 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 const config = require("config");
-const request = require("request");
 const { CronJob } = require("cron");
 const NodeWebcam = require("node-webcam");
 const { WebClient } = require("@slack/client");
-const vision = require("@google-cloud/vision");
 
-// Cloud Vision APIが指定されなかったとき
-if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(__dirname, "secret", "credentials.json");
-}
 // 写真撮影して保存する
 const onCapture = (opts) => {
     return new Promise((resolve, reject) => {
@@ -43,14 +37,10 @@ const onAnalyze = async (filename) => {
         return false;
     }
     const filepath = path.resolve(__dirname, filename);
-    const client = new vision.ImageAnnotatorClient();
-    const results = await client.textDetection(filepath);
-    console.log(results);
-
-    return JSON.stringify(results);
+    return null;
 }
 // Webhook先に通知できるように叩く
-const onPost = async (filename, slackUrl, slackToken, slackChannel, urls, detected) => {
+const onPost = async (filename, slackUrl, slackToken, slackChannel, detected) => {
     if (!filename) {
         console.warn("no image filename");
         return false;
@@ -75,24 +65,6 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, urls, detect
             console.error('slack post error', result.error);
         }
     }
-    // Slack以外にPOST
-    if (!urls || !urls.length) {
-        console.warn('urls are empty');
-    } else {
-        for(let i = 0 ; i < urls.length ; ++i) {
-            const url = urls[i];
-            const formData = {
-                filename: filename,
-                file: fs.createReadStream(filepath),
-                title: filename,
-                channels: slackChannel,
-                initial_comment: detected,
-            };
-            const result = await request.post({url: url, formData: formData});
-            console.log(`post! urls[${i + 1}/${urls.length}]`);
-        }
-    }
-    return true;
 };
 
 // 撮影設定
@@ -103,10 +75,6 @@ const cronTime = process.env.CRON_TIME || config.cronTime; // 指定されなか
 const slackWebhookUrl = (process.env.SLACK_WEBHOOK_URL || config.slackWebhookUrl || "https://slack.com/api/files.upload");
 const slackToken = (process.env.SLACK_TOKEN || config.slackToken || "");
 const slackChannel = (process.env.SLACK_CHANNEL || config.slackChannel || "");
-// Slack以外にpostする場合
-const webhookUrls = // スペース区切りでURL複数指定可能
-    (process.env.WEBHOOK_URLS || config.webhookUrls || "")
-        .split(" ").filter(x => x);
 
 if (cronTime) {
     // 定期実行
@@ -115,11 +83,10 @@ if (cronTime) {
         console.log('Job Start')
         Promise.resolve()
             .then(() => onCapture(cameraOption))
-            .then(filename => onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls))
+            .then(filename => new { filename: filename, detected: onCapture(cameraOption) })
+            .then(x => onPost(x.filename, slackWebhookUrl, slackToken, slackChannel, x.detected))
             .then(x => {
-                if (x) {
-                    console.log('Job Done')
-                }
+                console.log('Job Done')
             })
             .catch(err => {
                 console.error(err);
@@ -130,7 +97,7 @@ if (cronTime) {
         console.log('Onshot run');
         const filename = await onCapture(cameraOption);
         const detected = await onAnalyze(filename);
-        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, webhookUrls, detected);
+        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel,  detected);
         console.log('Done');
     })();
 }
