@@ -45,6 +45,13 @@ pm2 start index.js
 docker-compose up
 ```
 
+## Docker(ビルド済みイメージ)
+
+[DockerHub](https://hub.docker.com/r/kamiyaowl/laundry-ocr/)
+```
+docker pull kamiyaowl/laundry-ocr
+```
+
 # License
 
 MIT
