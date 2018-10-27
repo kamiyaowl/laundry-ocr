@@ -1,0 +1,9 @@
+laundry-ocr:
+    build: ./
+    privileged: true
+    environment: 
+      - CRON_TIME=*/1 * * * *
+      - SLACK_WEBHOOK_URL=https://slack.com/api/files.upload
+      - SLACK_TOKEN=
+      - SLACK_CHANNEL=
+      - SLACK_COMMENT=Post from container
