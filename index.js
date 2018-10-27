@@ -31,16 +31,8 @@ const onCapture = (opts) => {
         }
     });
 };
-const onAnalyze = async (filename) => {
-    if (!filename) {
-        console.warn("no image filename");
-        return false;
-    }
-    const filepath = path.resolve(__dirname, filename);
-    return null;
-}
 // Webhook先に通知できるように叩く
-const onPost = async (filename, slackUrl, slackToken, slackChannel, detected) => {
+const onPost = async (filename, slackUrl, slackToken, slackChannel, comment) => {
     if (!filename) {
         console.warn("no image filename");
         return false;
@@ -48,7 +40,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, detected) =>
     const filepath = path.resolve(__dirname, filename);
     // SlackにPOST
     if (!slackUrl || !slackToken) {
-        console.warn('slackUrl is empty');
+        console.warn('slackUrl or slackToken is empty');
     } else {
         const web = new WebClient(slackToken);
         const result =
@@ -57,7 +49,7 @@ const onPost = async (filename, slackUrl, slackToken, slackChannel, detected) =>
                 file: fs.createReadStream(filepath),
                 title: filename,
                 channels: slackChannel,
-                initial_comment: detected,
+                initial_comment: comment
             });
         if (result.ok) {
             console.log(`slack post! ${result.file.permalink}`);
@@ -75,6 +67,7 @@ const cronTime = process.env.CRON_TIME || config.cronTime; // 指定されなか
 const slackWebhookUrl = (process.env.SLACK_WEBHOOK_URL || config.slackWebhookUrl || "https://slack.com/api/files.upload");
 const slackToken = (process.env.SLACK_TOKEN || config.slackToken || "");
 const slackChannel = (process.env.SLACK_CHANNEL || config.slackChannel || "");
+const slackComment = (process.env.SLACK_COMMENT || config.slackComment || "");
 
 if (cronTime) {
     // 定期実行
@@ -84,16 +77,14 @@ if (cronTime) {
     new CronJob(cronTime, async () => {
         console.log(`Job Start #${count++}`)
         const filename = await onCapture(cameraOption);
-        const detected = await onAnalyze(filename);
-        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel,  detected);
+        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, slackComment);
         console.log('Done');
     }, null, true);
 } else {
     (async () => {
         console.log('Onshot run');
         const filename = await onCapture(cameraOption);
-        const detected = await onAnalyze(filename);
-        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel,  detected);
+        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel, slackComment);
         console.log('Done');
     })();
 }
