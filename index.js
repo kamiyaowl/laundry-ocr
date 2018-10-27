@@ -79,18 +79,14 @@ const slackChannel = (process.env.SLACK_CHANNEL || config.slackChannel || "");
 if (cronTime) {
     // 定期実行
     console.log(`CronJob scheduled! ${cronTime}`);
-    new CronJob(cronTime, () => {
-        console.log('Job Start')
-        Promise.resolve()
-            .then(() => onCapture(cameraOption))
-            .then(filename => new { filename: filename, detected: onCapture(cameraOption) })
-            .then(x => onPost(x.filename, slackWebhookUrl, slackToken, slackChannel, x.detected))
-            .then(x => {
-                console.log('Job Done')
-            })
-            .catch(err => {
-                console.error(err);
-            });
+    
+    let count = 0;
+    new CronJob(cronTime, async () => {
+        console.log(`Job Start #${count++}`)
+        const filename = await onCapture(cameraOption);
+        const detected = await onAnalyze(filename);
+        const result = await onPost(filename, slackWebhookUrl, slackToken, slackChannel,  detected);
+        console.log('Done');
     }, null, true);
 } else {
     (async () => {

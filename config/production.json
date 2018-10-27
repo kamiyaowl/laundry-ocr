@@ -13,5 +13,5 @@
     "cronTime": "",
     "slackWebhookUrl": "https://slack.com/api/files.upload",
     "slackToken": "",
-    "slackChannel": "",
+    "slackChannel": ""
 }
