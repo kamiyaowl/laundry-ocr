@@ -20,8 +20,8 @@ node.jsで作成された定点カメラアプリケーションです。洗濯�
 
 | 環境変数 | config | 設定値内容 | 設定例
 |---|---|---|--|
-|CRON_TIME|cronTime |定期実行する感覚を設定します。未指定の場合は１回だけ即座に実行されます | `"*/1 * * * *"` 
-|SLACK_WEBHOOK_URL|slackWebhookUrl|slackのPOST先です。正確にはfile upload apiを使うので設定の必要はありません。 | `""`
+|CRON_TIME|cronTime |定期実行する間隔を設定します。未指定の場合は１回だけ即座に実行されます | `"*/1 * * * *"` 
+|SLACK_WEBHOOK_URL|slackWebhookUrl|file upload apiを使うので設定の必要はありません。 | `""`
 |SLACK_TOKEN | slackToken | slackに画像を投稿するために使用するトークンです | -
 |SLACK_CHANNEL | slackChannel | Slackの投稿先チャンネルIDです | -
 |SLACK_CCOMMENT | slackComment | Slack投稿時のコメント | "Hello"
